@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useRTL } from "@/lib/rtl-context"
 import { useScreenInfo } from "@/hooks/use-mobile"
+import { isValidElement } from "react" // أضف هذا مع بقية الـ imports
 import { 
   Calculator, 
   Package, 
@@ -98,9 +99,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   // تنسيق أيقونات التنقل للدعم الكامل للـ RTL
   const getFlippedIcon = (icon: React.ReactNode) => {
-    if (!isRTL) return icon;
-    return React.cloneElement(icon as React.ReactElement, {
-      style: { transform: 'scaleX(-1)' }
+    if (!isRTL || !isValidElement(icon)) return icon;
+    return React.cloneElement(icon, {
+      style: { ...((icon as React.ReactElement<{ style?: React.CSSProperties }>).props.style || {}), transform: 'scaleX(-1)' }
     });
   };
 
