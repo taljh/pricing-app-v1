@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, Package, Search } from "lucide-react"
+import { AlertCircle, Package, Search, Loader2 } from "lucide-react"
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { toast } from "sonner"
 
 interface Product {
   id: string
@@ -15,6 +16,9 @@ interface Product {
   sku: string
   category: string
   status: string
+  has_pricing: boolean
+  price?: number
+  cost?: number
 }
 
 interface ProductSelectorProps {
@@ -29,10 +33,13 @@ export default function ProductSelector({ isOpen, onClose, onProductSelected }: 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [selectedProduct, setSelectedProduct] = useState<string | null>(null)
 
   useEffect(() => {
-    loadProducts()
-  }, [])
+    if (isOpen) {
+      loadProducts()
+    }
+  }, [isOpen])
 
   const loadProducts = async () => {
     try {
@@ -58,6 +65,7 @@ export default function ProductSelector({ isOpen, onClose, onProductSelected }: 
     } catch (err) {
       console.error('Error loading products:', err)
       setError(err instanceof Error ? err.message : 'حدث خطأ أثناء تحميل المنتجات')
+      toast.error(err instanceof Error ? err.message : 'حدث خطأ أثناء تحميل المنتجات')
     } finally {
       setLoading(false)
     }
@@ -65,8 +73,21 @@ export default function ProductSelector({ isOpen, onClose, onProductSelected }: 
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.sku.toLowerCase().includes(searchQuery.toLowerCase())
+    (product.sku && product.sku.toLowerCase().includes(searchQuery.toLowerCase()))
   )
+
+  const handleProductSelect = (productId: string) => {
+    setSelectedProduct(productId)
+  }
+
+  const handleConfirm = () => {
+    if (selectedProduct) {
+      onProductSelected(selectedProduct)
+      onClose()
+    } else {
+      toast.error('الرجاء اختيار منتج')
+    }
+  }
 
   const getCategoryColor = (category: string) => {
     switch (category) {
@@ -81,89 +102,88 @@ export default function ProductSelector({ isOpen, onClose, onProductSelected }: 
     }
   }
 
-  const getCategoryLabel = (category: string) => {
-    switch (category) {
-      case 'economic':
-        return 'اقتصادي'
-      case 'medium':
-        return 'متوسط'
-      case 'luxury':
-        return 'فاخر'
-      default:
-        return category
-    }
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <Package className="h-5 w-5 text-indigo-600" />
-            اختيار منتج
-          </DialogTitle>
+          <DialogTitle>اختر منتجاً</DialogTitle>
           <DialogDescription>
-            اختر منتجاً من قائمة منتجاتك أو ابحث عن منتج محدد
+            اختر منتجاً من القائمة أدناه أو ابحث عن منتج محدد
           </DialogDescription>
         </DialogHeader>
 
+        <div className="relative">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="ابحث عن منتج..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+
         {error && (
-          <Alert variant="destructive" className="mb-4">
+          <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-          <Input
-            placeholder="ابحث عن منتج..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 border-indigo-100 focus:border-indigo-300"
-          />
-        </div>
-
-        <ScrollArea className="h-[400px] pr-4">
+        <ScrollArea className="h-[300px] pr-4">
           {loading ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="flex items-center justify-center h-full">
+              <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : filteredProducts.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              {searchQuery ? 'لا توجد منتجات تطابق البحث' : 'لا توجد منتجات متاحة'}
+            <div className="text-center text-muted-foreground py-8">
+              لا توجد منتجات متاحة
             </div>
           ) : (
             <div className="space-y-2">
               {filteredProducts.map((product) => (
-                <Button
+                <div
                   key={product.id}
-                  variant="outline"
-                  className="w-full justify-start p-4 h-auto hover:bg-indigo-50 hover:border-indigo-200"
-                  onClick={() => {
-                    onProductSelected(product.id)
-                    onClose()
-                  }}
+                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                    selectedProduct === product.id
+                      ? 'border-primary bg-primary/5'
+                      : 'hover:bg-muted'
+                  }`}
+                  onClick={() => handleProductSelect(product.id)}
                 >
-                  <div className="flex flex-col items-start gap-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{product.name}</span>
-                      <span className="text-sm text-gray-500">({product.sku})</span>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">{product.name}</h4>
+                      {product.sku && (
+                        <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${getCategoryColor(product.category)}`}>
-                        {getCategoryLabel(product.category)}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {product.status === 'draft' ? 'مسودة' : 'نشط'}
-                      </span>
+                      {product.category && (
+                        <span className={`px-2 py-1 rounded-full text-xs ${getCategoryColor(product.category)}`}>
+                          {product.category}
+                        </span>
+                      )}
+                      {product.has_pricing && (
+                        <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                          مسعر
+                        </span>
+                      )}
                     </div>
                   </div>
-                </Button>
+                </div>
               ))}
             </div>
           )}
         </ScrollArea>
+
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={onClose}>
+            إلغاء
+          </Button>
+          <Button onClick={handleConfirm} disabled={!selectedProduct}>
+            تأكيد
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   )

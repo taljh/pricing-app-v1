@@ -155,30 +155,31 @@ export default function PricingCalculator({ onClose, initialProductId }: Pricing
 
   const onSubmit = async (data: PricingFormData) => {
     setIsSubmitting(true)
+    setError(null)
+    
     try {
       if (!selectedProduct?.id) {
-        toast.error('يجب اختيار منتج أولاً')
-        return
+        throw new Error('يجب اختيار منتج أولاً')
       }
 
       const supabase = createClientComponentClient()
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       
       if (userError || !user) {
-        toast.error('يجب تسجيل الدخول لحفظ التسعير')
-        return
+        throw new Error('يجب تسجيل الدخول لحفظ التسعير')
       }
 
       // حساب التكاليف النهائية
       const calculatedCosts = calculateCosts(data)
 
-      // التحقق من صحة البيانات قبل الحفظ
+      // التحقق من صحة البيانات
       if (isNaN(calculatedCosts.finalPrice) || calculatedCosts.finalPrice <= 0) {
-        toast.error('قيمة السعر النهائي غير صالحة')
-        return
+        throw new Error('قيمة السعر النهائي غير صالحة')
       }
 
-      console.log('تبدأ عملية الحفظ...')
+      if (calculatedCosts.directCosts <= 0) {
+        throw new Error('التكاليف المباشرة يجب أن تكون أكبر من صفر')
+      }
 
       // التحقق من وجود تسعير سابق للمنتج
       const { data: existingPricing, error: checkError } = await supabase
@@ -188,9 +189,7 @@ export default function PricingCalculator({ onClose, initialProductId }: Pricing
         .maybeSingle()
 
       if (checkError) {
-        console.error('خطأ في التحقق من التسعير الحالي:', checkError)
-        toast.error(`حدث خطأ أثناء التحقق من التسعير الحالي: ${checkError.message}`)
-        return
+        throw new Error(`خطأ في التحقق من التسعير الحالي: ${checkError.message}`)
       }
 
       const pricingData = {
@@ -198,97 +197,50 @@ export default function PricingCalculator({ onClose, initialProductId }: Pricing
         product_id: selectedProduct.id,
         fabric_main_cost: data.fabric_main_cost || 0,
         fabric_secondary_cost: data.fabric_secondary_cost || 0,
-        has_secondary_fabric: data.has_secondary_fabric || false,
         turha_main_cost: data.turha_main_cost || 0,
         turha_secondary_cost: data.turha_secondary_cost || 0,
-        has_turha: data.has_turha || false,
-        has_secondary_turha: data.has_secondary_turha || false,
         tailoring_cost: data.tailoring_cost || 0,
         packaging_cost: data.packaging_cost || 0,
         delivery_cost: data.delivery_cost || 0,
         extra_expenses: data.extra_expenses || 0,
         fixed_costs: data.fixed_costs || 0,
-        profit_margin: data.profit_margin || 30,
+        profit_margin: data.profit_margin || 0,
         marketing_costs: data.marketing_costs || 0,
-        marketing_type: data.marketing_type || 'fixed',
-        target_segment: data.target_segment || 'medium',
-        target_audience: data.target_audience || '',
-        payment_gateway_fees: calculatedCosts.paymentGatewayFees,
-        suggested_price: calculatedCosts.finalPrice,
+        marketing_type: data.marketing_type,
+        target_segment: data.target_segment,
+        target_audience: data.target_audience,
+        category: data.category,
         final_price: calculatedCosts.finalPrice,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
 
-      console.log('بيانات التسعير:', pricingData)
+      // حفظ أو تحديث التسعير
+      const { error: upsertError } = await supabase
+        .from('pricings')
+        .upsert(pricingData, { onConflict: 'product_id' })
 
-      let pricingError;
-      
-      // إذا كان هناك تسعير سابق، نقوم بالتحديث
-      if (existingPricing?.id) {
-        console.log('تحديث التسعير الحالي:', existingPricing.id)
-        const { error } = await supabase
-          .from('pricings')
-          .update(pricingData)
-          .eq('id', existingPricing.id)
-          
-        pricingError = error
-      } else {
-        // إنشاء تسعير جديد
-        console.log('إنشاء تسعير جديد')
-        const { error } = await supabase
-          .from('pricings')
-          .insert([pricingData])
-          
-        pricingError = error
-      }
-
-      if (pricingError) {
-        console.error('تفاصيل خطأ التسعير:', pricingError)
-        toast.error(`حدث خطأ أثناء حفظ التسعير: ${pricingError.message}`)
-        return
+      if (upsertError) {
+        throw new Error(`خطأ في حفظ التسعير: ${upsertError.message}`)
       }
 
       // تحديث حالة المنتج
-      console.log('تحديث حالة المنتج')
-      const { error: productError } = await supabase
+      const { error: updateError } = await supabase
         .from('products')
-        .update({ 
-          has_pricing: true,
-          price: calculatedCosts.finalPrice,
-          initial_price: calculatedCosts.directCosts
-        })
+        .update({ has_pricing: true })
         .eq('id', selectedProduct.id)
 
-      if (productError) {
-        console.error('تفاصيل خطأ تحديث المنتج:', productError)
-        toast.error(`تم حفظ التسعير ولكن حدث خطأ أثناء تحديث حالة المنتج: ${productError.message}`)
-        return
+      if (updateError) {
+        console.warn('تم حفظ التسعير لكن فشل تحديث حالة المنتج:', updateError)
       }
 
-      console.log('تم الحفظ بنجاح')
       toast.success('تم حفظ التسعير بنجاح')
-      
-      // تحديث واجهة المستخدم
-      setSelectedProduct({
-        ...selectedProduct,
-        has_pricing: true,
-        price: calculatedCosts.finalPrice,
-        initial_price: calculatedCosts.directCosts
-      })
+      if (onClose) onClose()
 
-      // إغلاق النافذة إذا طلب ذلك
-      if (onClose) {
-        setTimeout(() => {
-          onClose()
-        }, 1500)
-      }
-    } catch (error) {
-      console.error('خطأ في حفظ التسعير:', error)
-      if (error instanceof Error) {
-        toast.error(`حدث خطأ غير متوقع: ${error.message}`)
-      } else {
-        toast.error('حدث خطأ غير متوقع أثناء حفظ التسعير')
-      }
+    } catch (err) {
+      console.error('Error saving pricing:', err)
+      setError(err instanceof Error ? err.message : 'حدث خطأ غير معروف')
+      toast.error(err instanceof Error ? err.message : 'حدث خطأ في حفظ التسعير')
     } finally {
       setIsSubmitting(false)
     }
