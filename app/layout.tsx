@@ -15,6 +15,8 @@ export const metadata: Metadata = {
   description: "منصة متكاملة لتسعير المنتجات بذكاء وفعالية",
 };
 
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({
   children,
 }: Readonly<{
