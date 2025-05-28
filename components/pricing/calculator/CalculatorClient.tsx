@@ -25,7 +25,7 @@ function CalculatorContent() {
 
 export default function CalculatorClient() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading calculator...</div>}>
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]">Loading calculator...</div>}>
       <SearchParamsProvider>
         <CalculatorContent />
       </SearchParamsProvider>
