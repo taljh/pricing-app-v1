@@ -7,28 +7,24 @@ import { useRouter } from "next/navigation"
 import { useScreenInfo } from "@/hooks/use-mobile"
 import { useRTL } from "@/lib/rtl-context"
 
-function Calculator() {
+export default function PricingPage() {
   const router = useRouter()
   const { isMobile } = useScreenInfo()
   const { isRTL } = useRTL()
-  
-  return (
-    <AppShell>
-      <div className={`container mx-auto py-4 px-3 sm:py-6 sm:px-4 ${isRTL ? 'rtl' : 'ltr'}`}>
-        <PricingCalculator
-          onClose={() => {
-            router.push('/products')
-          }}
-        />
-      </div>
-    </AppShell>
-  )
-}
 
-export default function PricingPage() {
   return (
     <Suspense fallback={<div className="container mx-auto py-8 text-center">جاري التحميل...</div>}>
-      <Calculator />
+      <AppShell>
+        <div className={`container mx-auto py-4 px-3 sm:py-6 sm:px-4 ${isRTL ? 'rtl' : 'ltr'}`}>
+          <PricingCalculator
+            onClose={() => {
+              router.push('/products')
+            }}
+          />
+        </div>
+      </AppShell>
     </Suspense>
   )
 }
+
+// Removed duplicate function implementation
