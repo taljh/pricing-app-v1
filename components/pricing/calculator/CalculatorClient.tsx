@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { Suspense } from "react"
 import PricingCalculator from "./PricingCalculator"
 import { useRTL } from "@/lib/rtl-context"
 import { useScreenInfo } from "@/hooks/use-mobile"
@@ -24,8 +25,10 @@ function CalculatorContent() {
 
 export default function CalculatorClient() {
   return (
-    <SearchParamsProvider>
-      <CalculatorContent />
-    </SearchParamsProvider>
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading calculator...</div>}>
+      <SearchParamsProvider>
+        <CalculatorContent />
+      </SearchParamsProvider>
+    </Suspense>
   )
 } 
