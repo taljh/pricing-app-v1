@@ -10,6 +10,13 @@ const nextConfig = {
     unoptimized: true,
   },
   transpilePackages: ['framer-motion'],
+  reactStrictMode: true,
+  experimental: {
+    serverActions: true,
+  },
+  compiler: {
+    styledComponents: true,
+  },
 }
 
 export default nextConfig
