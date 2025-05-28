@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { useSearchParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -91,16 +91,14 @@ interface PricingFormData {
 
 interface PricingCalculatorProps {
   onClose?: () => void;
+  initialProductId?: string | null;
 }
 
-export default function PricingCalculator({ onClose }: PricingCalculatorProps) {
-  const searchParams = useSearchParams()
+export default function PricingCalculator({ onClose, initialProductId }: PricingCalculatorProps) {
   const router = useRouter()
-  const productId = searchParams?.get('product_id') || null
-  
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isInitialLoading, setIsInitialLoading] = useState(false)
-  const [isProductSelectorVisible, setIsProductSelectorVisible] = useState(!productId)
+  const [isProductSelectorVisible, setIsProductSelectorVisible] = useState(!initialProductId)
   const [error, setError] = useState<string | null>(null)
   const [costs, setCosts] = useState<Costs>({
     fabricMainCost: 0,
@@ -581,13 +579,13 @@ export default function PricingCalculator({ onClose }: PricingCalculatorProps) {
   }
 
   useEffect(() => {
-    if (productId) {
-      handleProductSelected(productId).catch((err) => {
+    if (initialProductId) {
+      handleProductSelected(initialProductId).catch((err) => {
         setError(err.message || 'حدث خطأ أثناء تحميل المنتج')
         setIsProductSelectorVisible(true)
       })
     }
-  }, [productId])
+  }, [initialProductId])
 
   if (error) {
     return (

@@ -4,7 +4,7 @@ export const dynamic = "force-dynamic"
 import { Suspense } from "react"
 import { useRouter } from "next/navigation"
 import { AppShell } from "@/components/ui/app-shell"
-import PricingCalculator from "@/components/pricing/calculator/PricingCalculator"
+import CalculatorClient from "@/components/pricing/calculator/CalculatorClient"
 import { useScreenInfo } from "@/hooks/use-mobile"
 import { useRTL } from "@/lib/rtl-context"
 
@@ -15,9 +15,7 @@ function CalculatorWrapper() {
 
   return (
     <div className={`container mx-auto py-4 px-3 sm:py-6 sm:px-4 ${isRTL ? 'rtl' : 'ltr'}`}>
-      <PricingCalculator
-        onClose={() => router.push("/products")}
-      />
+      <CalculatorClient />
     </div>
   )
 }
