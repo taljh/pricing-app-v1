@@ -1,5 +1,5 @@
-export const dynamic = "force-dynamic"
 "use client"
+export const dynamic = "force-dynamic"
 
 import { useRouter } from "next/navigation"
 import { AppShell } from "@/components/ui/app-shell"
@@ -22,5 +22,3 @@ export default function PricingCalculatorPage() {
     </AppShell>
   )
 }
-
-// Removed duplicate function implementation
