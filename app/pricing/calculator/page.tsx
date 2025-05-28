@@ -1,34 +1,34 @@
 "use client"
 
+import { Suspense } from "react"
 import { AppShell } from "@/components/ui/app-shell"
 import PricingCalculator from "@/components/pricing/calculator/PricingCalculator"
 import { useRouter } from "next/navigation"
 import { useScreenInfo } from "@/hooks/use-mobile"
 import { useRTL } from "@/lib/rtl-context"
-import { Suspense } from "react"
 
-function CalculatorPageWrapper() {
+function Calculator() {
   const router = useRouter()
   const { isMobile } = useScreenInfo()
   const { isRTL } = useRTL()
   
   return (
-    <div className={`container mx-auto py-4 px-3 sm:py-6 sm:px-4 ${isRTL ? 'rtl' : 'ltr'}`}>
-      <PricingCalculator
-        onClose={() => {
-          router.push('/products')
-        }}
-      />
-    </div>
+    <AppShell>
+      <div className={`container mx-auto py-4 px-3 sm:py-6 sm:px-4 ${isRTL ? 'rtl' : 'ltr'}`}>
+        <PricingCalculator
+          onClose={() => {
+            router.push('/products')
+          }}
+        />
+      </div>
+    </AppShell>
   )
 }
 
-export default function PricingCalculatorPage() {
+export default function PricingPage() {
   return (
-    <AppShell>
-      <Suspense fallback={<div className="container mx-auto py-8 text-center">جارٍ التحميل...</div>}>
-        <CalculatorPageWrapper />
-      </Suspense>
-    </AppShell>
+    <Suspense fallback={<div className="container mx-auto py-8 text-center">جاري التحميل...</div>}>
+      <Calculator />
+    </Suspense>
   )
 }
