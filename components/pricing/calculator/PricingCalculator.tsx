@@ -96,11 +96,12 @@ interface PricingCalculatorProps {
 export default function PricingCalculator({ onClose }: PricingCalculatorProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const productId = searchParams.get('product_id')
+  const productId = searchParams?.get('product_id') || null
   
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isInitialLoading, setIsInitialLoading] = useState(false) // تم تغيير القيمة الافتراضية
-  const [isProductSelectorVisible, setIsProductSelectorVisible] = useState(!productId) // حالة جديدة لإظهار محدد المنتج
+  const [isInitialLoading, setIsInitialLoading] = useState(false)
+  const [isProductSelectorVisible, setIsProductSelectorVisible] = useState(!productId)
+  const [error, setError] = useState<string | null>(null)
   const [costs, setCosts] = useState<Costs>({
     fabricMainCost: 0,
     fabricSecondaryCost: 0,
@@ -579,15 +580,26 @@ export default function PricingCalculator({ onClose }: PricingCalculatorProps) {
     window.history.pushState({}, '', newUrl);
   }
 
-  // التأكد من وجود معرف المنتج، وإلا إظهار محدد المنتج
   useEffect(() => {
     if (productId) {
-      setIsInitialLoading(true);
-      handleProductSelected(productId).finally(() => {
-        setIsInitialLoading(false);
-      });
+      handleProductSelected(productId).catch((err) => {
+        setError(err.message || 'حدث خطأ أثناء تحميل المنتج')
+        setIsProductSelectorVisible(true)
+      })
     }
-  }, [productId]);
+  }, [productId])
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center p-4">
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+        <Button onClick={() => setError(null)}>حاول مرة أخرى</Button>
+      </div>
+    )
+  }
 
   // في حالة كانت صفحة اختيار المنتج مرئية، نعرض مكون اختيار المنتج
   if (isProductSelectorVisible) {
