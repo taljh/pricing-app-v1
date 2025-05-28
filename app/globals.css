@@ -1,0 +1,242 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@100;200;300;400;500;600;700&display=swap');
+
+html {
+  direction: rtl !important;
+}
+body {
+  direction: rtl !important;
+  text-align: right !important;
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+}
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 47.4% 11.2%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 47.4% 11.2%;
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 100% 50%;
+  --destructive-foreground: 210 40% 98%;
+  --ring: 215 20.2% 65.1%;
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* RTL-specific overrides */
+html[dir="rtl"] {
+  /* Fix Tailwind margins and paddings for RTL */
+  .ml-1 { margin-right: 0.25rem !important; margin-left: 0 !important; }
+  .ml-2 { margin-right: 0.5rem !important; margin-left: 0 !important; }
+  .ml-3 { margin-right: 0.75rem !important; margin-left: 0 !important; }
+  .ml-4 { margin-right: 1rem !important; margin-left: 0 !important; }
+  .mr-1 { margin-left: 0.25rem !important; margin-right: 0 !important; }
+  .mr-2 { margin-left: 0.5rem !important; margin-right: 0 !important; }
+  .mr-3 { margin-left: 0.75rem !important; margin-right: 0 !important; }
+  .mr-4 { margin-left: 1rem !important; margin-right: 0 !important; }
+  
+  /* Ensure dropdowns and popups open from right side */
+  .origin-top-right {
+    transform-origin: top left !important;
+  }
+  
+  /* Fix border radiuses for RTL designs */
+  .rounded-r-lg {
+    border-radius: 0 !important;
+    border-top-left-radius: 0.5rem !important;
+    border-bottom-left-radius: 0.5rem !important;
+  }
+  
+  .rounded-l-lg {
+    border-radius: 0 !important;
+    border-top-right-radius: 0.5rem !important;
+    border-bottom-right-radius: 0.5rem !important;
+  }
+}
+
+/* Utility for flipping icons in RTL mode */
+.rtl-flip {
+  transform: scaleX(-1);
+}
+
+/* Ensure all UI components respect RTL layout */
+html[dir="rtl"] .dropdown-menu {
+  left: auto;
+  right: 0;
+}
+
+/* Fix text alignment in RTL mode */
+html[dir="rtl"] text, 
+html[dir="rtl"] tspan {
+  text-anchor: start;
+}
+
+/* تخصيص للغة العربية */
+.font-cairo {
+  font-family: var(--font-cairo), sans-serif;
+}
+
+/* تعديل مؤشرات الرسوم البيانية للاتجاه من اليمين إلى اليسار */
+.rtl-chart {
+  direction: rtl;
+}
+
+/* تعديل الزوايا المستديرة للاتجاه من اليمين إلى اليسار */
+.rtl-rounded-r {
+  border-top-left-radius: 0.25rem;
+  border-bottom-left-radius: 0.25rem;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.rtl-rounded-l {
+  border-top-right-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* تعديل المحاذاة للاتجاه من اليمين إلى اليسار */
+.rtl-text-right {
+  text-align: left;
+}
+
+.rtl-text-left {
+  text-align: right;
+}
+
+/* تعديل الموضع للاتجاه من اليمين إلى اليسار */
+.rtl-right {
+  left: 0;
+  right: auto;
+}
+
+.rtl-left {
+  right: 0;
+  left: auto;
+}
+
+/* تعديل المؤشرات للاتجاه من اليمين إلى اليسار */
+.rtl-indicator {
+  transform: rotate(180deg);
+}
+
+/* تعديل الشريط التقدمي للاتجاه من اليمين إلى اليسار */
+.rtl-progress-bar {
+  right: 0;
+  left: auto;
+  transform-origin: right;
+}
+
+/* تعديل الهوامش للاتجاه من اليمين إلى اليسار */
+.rtl-mr-1 {
+  margin-left: 0.25rem;
+  margin-right: 0;
+}
+
+.rtl-mr-2 {
+  margin-left: 0.5rem;
+  margin-right: 0;
+}
+
+.rtl-mr-3 {
+  margin-left: 0.75rem;
+  margin-right: 0;
+}
+
+.rtl-mr-4 {
+  margin-left: 1rem;
+  margin-right: 0;
+}
+
+.rtl-ml-1 {
+  margin-right: 0.25rem;
+  margin-left: 0;
+}
+
+.rtl-ml-2 {
+  margin-right: 0.5rem;
+  margin-left: 0;
+}
+
+.rtl-ml-3 {
+  margin-right: 0.75rem;
+  margin-left: 0;
+}
+
+.rtl-ml-4 {
+  margin-right: 1rem;
+  margin-left: 0;
+}
+
+/* تعديل الحدود للاتجاه من اليمين إلى اليسار */
+.rtl-border-r {
+  border-left: 1px solid;
+  border-right: none;
+}
+
+.rtl-border-l {
+  border-right: 1px solid;
+  border-left: none;
+}
+
+/* Custom styling for the app */
+.app-container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 pb-10;
+}
+
+.page-header {
+  @apply flex items-center justify-between py-5 border-b;
+}
+
+.section-title {
+  @apply text-xl font-semibold text-gray-800 mb-4;
+}
+
+/* Navigation styles */
+.nav-tab {
+  @apply px-3 py-2 rounded-md font-medium transition-colors;
+}
+
+.nav-tab.active {
+  @apply bg-primary/10 text-primary;
+}
+
+.nav-tab:not(.active) {
+  @apply text-gray-600 hover:text-gray-900 hover:bg-gray-100;
+}
+
+.app-dashboard-layout {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8;
+}
+
+.app-card {
+  @apply bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow;
+}
+
+.app-card-large {
+  @apply col-span-1 md:col-span-2;
+}
